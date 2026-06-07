@@ -1,0 +1,26 @@
+apiVersion: v2
+name: gaps
+description: GAPS — find missing movies in your Plex library. bjw-s app-template baseline.
+type: application
+version: 1.0.0
+appVersion: "latest"
+kubeVersion: ">=1.28.0-0"
+home: https://github.com/RandomNinjaAtk/docker-gaps
+keywords:
+  - gaps
+  - plex
+  - movies
+  - bjw-s
+  - app-template
+sources:
+  - https://github.com/RandomNinjaAtk/docker-gaps
+  - https://github.com/bjw-s/helm-charts
+maintainers: []
+dependencies:
+  - name: app-template
+    version: "4.6.2"
+    repository: https://bjw-s-labs.github.io/helm-charts
+    alias: gaps
+  - name: onepassworditem
+    version: "1.1.1"
+    repository: https://expectedbehaviors.github.io/OnePasswordItem-helm
