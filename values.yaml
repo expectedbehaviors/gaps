@@ -1,0 +1,107 @@
+# Baseline GAPS values. Override ingress and Plex credentials (via Secret or onepassworditem) in your deployment values.
+gaps:
+  global:
+    fullnameOverride: gaps
+  defaultPodOptions:
+    securityContext:
+      fsGroup: 1000
+      runAsGroup: 1000
+      runAsUser: 1000
+      fsGroupChangePolicy: OnRootMismatch
+  controllers:
+    main:
+      enabled: true
+      type: deployment
+      replicas: 1
+      containers:
+        main:
+          image:
+            repository: housewrecker/gaps
+            tag: latest
+            pullPolicy: IfNotPresent
+          env:
+            TZ: UTC
+          envFrom:
+            - secretRef:
+                name: gaps
+          probes:
+            startup:
+              enabled: true
+              custom: true
+              spec:
+                httpGet:
+                  path: /
+                  port: 8484
+                initialDelaySeconds: 0
+                periodSeconds: 5
+                timeoutSeconds: 3
+                failureThreshold: 30
+            liveness:
+              enabled: true
+              custom: true
+              spec:
+                httpGet:
+                  path: /
+                  port: 8484
+                initialDelaySeconds: 15
+                periodSeconds: 20
+                timeoutSeconds: 5
+                failureThreshold: 3
+            readiness:
+              enabled: true
+              custom: true
+              spec:
+                httpGet:
+                  path: /
+                  port: 8484
+                initialDelaySeconds: 5
+                periodSeconds: 10
+                timeoutSeconds: 3
+                failureThreshold: 3
+          resources:
+            requests:
+              cpu: 5m
+              memory: 128Mi
+            limits:
+              memory: 1Gi
+  service:
+    main:
+      enabled: true
+      controller: main
+      primary: true
+      ports:
+        http:
+          enabled: true
+          primary: true
+          port: 8484
+  ingress:
+    main:
+      enabled: true
+      className: nginx
+      annotations: {}
+      hosts:
+        - host: gaps.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+              service:
+                identifier: main
+                port: http
+      tls:
+        - hosts:
+            - gaps.example.com
+          secretName: gaps-tls
+  persistence:
+    data:
+      enabled: true
+      type: persistentVolumeClaim
+      accessMode: ReadWriteOnce
+      size: 20Mi
+      storageClass: ""
+      globalMounts:
+        - path: /usr/data
+          readOnly: false
+
+onepassworditem:
+  enabled: true
+  items: []
